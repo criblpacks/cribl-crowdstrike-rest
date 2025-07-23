@@ -1,0 +1,224 @@
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Try to map the product_type_desc field to type and type_id.
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Edit crowdstrike_device_type_mapping.csv as needed to add custom
+        product_type_desc values
+  - id: lookup
+    filter: "true"
+    disabled: null
+    conf:
+      dbLookup: false
+      matchMode: exact
+      reloadPeriodSec: -1
+      inFields:
+        - eventField: product_type_desc
+          lookupField: type
+      addToEvent: false
+      ignoreCase: false
+      file: crowdstrike_device_type_mapping.csv
+      outFields:
+        - lookupField: type_id
+          defaultValue: "0"
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: time
+          value: new Date(agent_local_time).getTime()
+        - name: device
+          value: "{}"
+        - name: device.uid
+          value: device_id
+        - name: device.hostname
+          value: hostname
+        - name: device.ip
+          value: local_ip
+        - disabled: false
+          name: device.mac
+          value: mac_address
+        - disabled: false
+          name: device.os
+          value: os_product_name
+        - name: device.vendor_name
+          value: bios_manufacturer
+        - name: device.type_id
+          value: type_id
+        - name: device.type
+          value: product_type_desc
+        - disabled: false
+          name: device.first_seen_time
+          value: new Date(first_seen).getTime()
+        - disabled: false
+          name: device.last_seen_time
+          value: new Date(last_seen).getTime()
+        - name: category_uid
+          value: "5"
+        - name: activity_id
+          value: "2"
+        - disabled: false
+          name: activity_name
+          value: "'Collect'"
+        - name: class_uid
+          value: "5001"
+        - name: severity_id
+          value: "1"
+        - name: type_uid
+          value: "500102"
+        - name: timezone_offset
+          value: "0"
+        - name: metadata
+          value: "{}"
+        - name: metadata.product
+          value: "{}"
+        - name: metadata.product.name
+          value: "'Falcon Device Inventory'"
+        - name: metadata.product.vendor_name
+          value: "'CrowdStrike'"
+        - name: metadata.product.version
+          value: agent_version
+        - name: metadata.version
+          value: "'1.4.0'"
+        - name: metadata.tenant_uid
+          value: cid
+        - name: message
+          value: "'Crowdstrike Device inventory record'"
+        - name: status_id
+          value: "1"
+        - name: status
+          value: "'Success'"
+        - name: status_code
+          value: rtr_state
+        - name: status_detail
+          value: filesystem_containment_status
+        - disabled: false
+          name: raw_data
+          value: _raw
+        - name: unmapped
+          value: "{}"
+          disabled: true
+      keep: []
+      remove: []
+    description: Create OCSF-compatible fields and objects; preserve required fields
+      and drop everything else.
+  - id: eval
+    filter: "true"
+    disabled: true
+    conf:
+      add:
+        - name: time
+          value: _time
+        - name: timezone_offset
+          value: "0"
+        - name: category_uid
+          value: "5"
+        - disabled: false
+          name: category
+          value: "'Discovery'"
+        - name: class_uid
+          value: "5001"
+        - name: activity_id
+          value: "2"
+        - name: type_uid
+          value: "500102"
+        - name: status
+          value: status
+        - name: status_id
+          value: "status === 'normal' ? 1 : 99"
+        - name: status_detail
+          value: provision_status
+        - name: status_code
+          value: "''"
+        - name: device
+          value: "{}"
+        - name: device.uid
+          value: device_id
+        - name: device.hostname
+          value: hostname
+        - name: device.vendor_name
+          value: bios_manufacturer
+        - name: device.type_id
+          value: "platform_name === 'Windows' && product_type_desc === 'Workstation' ? 2 :
+            0"
+        - name: device.type
+          value: "device.type_id === 2 ? 'desktop' : 'unknown'"
+        - name: observables
+          value: "[{name:'interface.ip',type_id:2,value:local_ip},{name:'interface.mac',t\
+            ype_id:3,value:mac_address}]"
+        - name: metadata
+          value: "{}"
+        - name: metadata.product
+          value: "{}"
+        - name: metadata.product.name
+          value: "'CrowdStrike Falcon'"
+        - name: metadata.product.vendor_name
+          value: "'CrowdStrike'"
+        - name: metadata.product.version
+          value: agent_version
+        - name: metadata.version
+          value: "'1.4.0-inventory_info-5001'"
+        - name: metadata.log_name
+          value: "'CrowdStrike Device Inventory'"
+        - name: metadata.log_provider
+          value: "'CrowdStrike Falcon API'"
+        - name: unmapped
+          value: "{}"
+    description: Create OCSF core, status, device, observables and metadata fields.
+  - id: code
+    filter: "true"
+    disabled: true
+    conf:
+      maxNumOfIterations: 5000
+      activeLogSampleRate: 1
+      useUniqueLogChannel: true
+      code: >-
+        var includeList =
+        ['time','timezone_offset','category_uid','class_uid','activity_id','type','status','status_id','status_detail','status_code','device','observables','metadata','unmapped'];
+
+        var extra = {};
+
+        for (var key in includeList) {
+          if (keepList.indexOf(key) === -1 && key.indexOf('__') !== 0) {
+            extra[key] = __e[key];
+            delete __e[key];
+          }
+        }
+
+        __e['unmapped'] = extra;
+    description: Capture all remaining source fields into 'unmapped' object.
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      keep:
+        - unmapped.*
+        - message
+        - category_uid
+        - status_detail
+        - status_code
+        - time
+        - status_id
+        - status
+        - observables.*
+        - class_uid
+        - timezone_offset
+        - device.*
+        - type_uid
+        - metadata.*
+        - activity_*
+        - raw_data
+        - category_*
+      remove:
+        - "*"
+        - __*
+    description: Drop fields not in the keep list.
+streamtags:
+  - cpe
+groups: {}

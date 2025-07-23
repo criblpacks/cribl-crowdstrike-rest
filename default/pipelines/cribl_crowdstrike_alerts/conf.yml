@@ -1,0 +1,63 @@
+output: default
+streamtags: []
+groups: {}
+asyncFuncTimeout: 1000
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Parse and remove unneeded fields from Crowdstrike Alert logs
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: "Author: Cribl Packs Team"
+  - id: serde
+    filter: "true"
+    disabled: null
+    conf:
+      mode: extract
+      type: json
+      srcField: _raw
+      remove:
+        - _raw
+    description: Parse the fields from the JSON event in _raw
+  - id: drop
+    filter: C.vars.crowdstrike_alerts_filter_low_severity && severity_name=='low'
+    disabled: false
+    conf: {}
+    description: Filter out low severity alerts
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      remove:
+        - "*_id"
+        - "*_timestamp"
+    description: Remove unneeded/redundant fields
+  - id: serialize
+    filter: "true"
+    disabled: null
+    conf:
+      type: json
+      dstField: _raw
+      fields:
+        - "!cribl_*"
+        - "!_*"
+        - "!host"
+        - "*"
+        - "!source"
+    description: "Serialize as JSON back into _raw "
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      keep:
+        - _*
+        - cribl_*
+        - host
+        - source
+      remove:
+        - "*"
+    description: Cleanup fields

@@ -1,0 +1,77 @@
+output: default
+streamtags: []
+groups:
+  VQH9ac:
+    name: Filter fields
+    index: 3
+asyncFuncTimeout: 1000
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Parse and remove unneeded fields from Crowdstrike device logs
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: "Author: Cribl Packs Team"
+  - id: serde
+    filter: "true"
+    disabled: null
+    conf:
+      mode: extract
+      type: json
+      srcField: _raw
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      remove:
+        - platform_id
+        - meta*
+        - "*policy_id"
+        - "*settings_hash"
+    description: Remove low-value fields
+    groupId: VQH9ac
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      remove:
+        - device_policies*
+    groupId: VQH9ac
+    description: Remove device_policies array
+  - id: serialize
+    filter: "true"
+    disabled: false
+    conf:
+      type: json
+      dstField: _raw
+      fields:
+        - "!cribl_*"
+        - "!_*"
+        - "!host"
+        - "!source"
+        - "*"
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      remove:
+        - "*"
+      keep:
+        - cribl_*
+        - _*
+        - host
+        - source
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Map to OCSF
+  - id: chain
+    filter: "true"
+    disabled: false
+    conf:
+      processor: cribl_crowdstrike_devices_ocsf

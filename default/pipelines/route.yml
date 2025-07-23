@@ -1,0 +1,26 @@
+id: default
+groups: {}
+comments: []
+routes:
+  - id: RZ2q8A
+    name: cribl_crowdstrike_devices_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_devices
+    description: ""
+    enableOutputExpression: false
+    outputExpression: null
+    filter: _raw.includes('agent_local_time')
+    clones: []
+    output: default
+  - id: default
+    name: default
+    final: true
+    disabled: true
+    pipeline: main
+    description: ""
+    enableOutputExpression: false
+    outputExpression: null
+    filter: "true"
+    clones: []
+    output: default

@@ -1,0 +1,12 @@
+type_id,type
+0,Unknown
+1,Server
+1,Domain Controller
+2,Desktop
+2,Workstation
+3,Laptop
+4,Tablet
+5,Mobile
+6,Virtual
+7,IOT
+99,Other

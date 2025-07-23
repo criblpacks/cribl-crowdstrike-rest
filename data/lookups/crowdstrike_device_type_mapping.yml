@@ -1,0 +1,6 @@
+id: crowdstrike_device_type_mapping.csv
+size: 127
+mode: memory
+version: uj6YyiBA
+rows: 11
+description: Mapping for Crowdstrike product_type_desc field to type. Customize as needed.
