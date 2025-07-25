@@ -59,3 +59,9 @@ functions:
       remove:
         - "*"
     description: Cleanup fields
+  - id: chain
+    filter: "true"
+    disabled: null
+    conf:
+      processor: cribl_crowdstrike_vulnerabilities_ocsf
+    description: Format data as OCSF

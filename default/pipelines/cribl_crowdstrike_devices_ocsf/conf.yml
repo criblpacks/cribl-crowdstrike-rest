@@ -3,13 +3,28 @@ functions:
     filter: "true"
     disabled: null
     conf:
+      comment: Map Crowdstrike Device data to the Device Inventory (5001) Class
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - disabled: false
+          value: JSON.parse(_raw)
+          name: rawParsed
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
       comment: Try to map the product_type_desc field to type and type_id.
+    groupId: CGZA2N
   - id: comment
     filter: "true"
     disabled: null
     conf:
       comment: Edit crowdstrike_device_type_mapping.csv as needed to add custom
         product_type_desc values
+    groupId: CGZA2N
   - id: lookup
     filter: "true"
     disabled: null
@@ -18,23 +33,58 @@ functions:
       matchMode: exact
       reloadPeriodSec: -1
       inFields:
-        - eventField: product_type_desc
-          lookupField: type
+        - eventField: chassis_type_desc
+          lookupField: chassis_type_desc
       addToEvent: false
       ignoreCase: false
       file: crowdstrike_device_type_mapping.csv
       outFields:
         - lookupField: type_id
           defaultValue: "0"
+    groupId: CGZA2N
+    description: Lookup type_id
   - id: eval
     filter: "true"
     disabled: null
     conf:
       add:
-        - name: time
-          value: new Date(agent_local_time).getTime()
+        - disabled: false
+          name: os_object
+          value: "{}"
+        - disabled: false
+          name: os_object.name
+          value: os_product_name
+        - disabled: false
+          name: os_object.build
+          value: os_build
+        - disabled: false
+          name: os_object.version
+          value: os_version
+        - disabled: false
+          name: os_object.build
+          value: os_build
+        - disabled: false
+          name: os_object.type_id
+          value: 'os_product_name.includes("Windows") ? 100 :
+            os_product_name.includes("Linux") ? 200 :
+            os_product_name.includes("mac") ? 300 : 0'
+        - disabled: false
+          name: os_object.type
+          value: "os_product_name.includes(\"Windows\") ? 'Windows' :
+            os_product_name.includes(\"Linux\") ? 'Linux' :
+            os_product_name.includes(\"mac\") ? 'macOS' : 'Unknown'"
+    groupId: CGZA2N
+    description: Set Device OS field
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
         - name: device
           value: "{}"
+        - disabled: false
+          name: device.os
+          value: os_object
         - name: device.uid
           value: device_id
         - name: device.hostname
@@ -44,39 +94,31 @@ functions:
         - disabled: false
           name: device.mac
           value: mac_address
-        - disabled: false
-          name: device.os
-          value: os_product_name
         - name: device.vendor_name
-          value: bios_manufacturer
+          value: system_manufacturer
         - name: device.type_id
           value: type_id
         - name: device.type
-          value: product_type_desc
+          value: 'chassis_type_desc==="Invalid Chassis Type" ? 0 : chassis_type_desc'
         - disabled: false
           name: device.first_seen_time
           value: new Date(first_seen).getTime()
         - disabled: false
           name: device.last_seen_time
           value: new Date(last_seen).getTime()
-        - name: category_uid
-          value: "5"
-        - name: activity_id
-          value: "2"
         - disabled: false
-          name: activity_name
-          value: "'Collect'"
-        - name: class_uid
-          value: "5001"
+          name: device.domain
+          value: machine_domain
         - disabled: false
-          name: class_name
-          value: "'Device Inventory Info'"
-        - name: severity_id
-          value: "1"
-        - name: type_uid
-          value: "500102"
-        - name: timezone_offset
-          value: "0"
+          name: device.owner
+          value: "[{name:last_login_user}]"
+    description: Set device field
+    groupId: CGZA2N
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
         - name: metadata
           value: "{}"
         - name: metadata.product
@@ -91,8 +133,32 @@ functions:
           value: "'1.4.0'"
         - name: metadata.tenant_uid
           value: cid
+    description: Set metadata Device
+    groupId: CGZA2N
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: activity_id
+          value: "2"
+        - disabled: false
+          name: activity_name
+          value: "'Collect'"
+        - name: category_uid
+          value: "5"
+        - name: class_uid
+          value: "5001"
+        - disabled: false
+          name: class_name
+          value: "'Device Inventory Info'"
         - name: message
           value: "'Crowdstrike Device inventory record'"
+        - disabled: false
+          name: raw_data
+          value: _raw
+        - name: severity_id
+          value: "1"
         - name: status_id
           value: "1"
         - name: status
@@ -101,38 +167,19 @@ functions:
           value: rtr_state
         - name: status_detail
           value: filesystem_containment_status
-        - disabled: false
-          name: raw_data
-          value: _raw
+        - name: time
+          value: new Date(agent_local_time).getTime()
+        - name: timezone_offset
+          value: "0"
+        - name: type_uid
+          value: "500102"
         - name: unmapped
           value: "{}"
           disabled: true
       keep: []
       remove: []
-    description: Create OCSF-compatible fields and objects; preserve required fields
-      and drop everything else.
-  - id: code
-    filter: "true"
-    disabled: true
-    conf:
-      maxNumOfIterations: 5000
-      activeLogSampleRate: 1
-      useUniqueLogChannel: true
-      code: >-
-        var includeList =
-        ['time','timezone_offset','category_uid','class_uid','activity_id','type','status','status_id','status_detail','status_code','device','observables','metadata','unmapped'];
-
-        var extra = {};
-
-        for (var key in includeList) {
-          if (keepList.indexOf(key) === -1 && key.indexOf('__') !== 0) {
-            extra[key] = __e[key];
-            delete __e[key];
-          }
-        }
-
-        __e['unmapped'] = extra;
-    description: Capture all remaining source fields into 'unmapped' object.
+    description: Set remaining OSCF Device Inventory  fields
+    groupId: CGZA2N
   - id: eval
     filter: "true"
     disabled: false
@@ -158,7 +205,10 @@ functions:
       remove:
         - "*"
         - __*
-    description: Drop fields non-OCSF fields
+    description: Drop non-OCSF fields
 streamtags:
   - cpe
-groups: {}
+groups:
+  CGZA2N:
+    name: Set OCSF Device Inventory  fields
+    index: 2

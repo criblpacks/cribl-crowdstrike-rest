@@ -17,12 +17,39 @@ functions:
     disabled: null
     conf:
       add:
-        - disabled: true
-          name: orig_device
-          value: device
+        - disabled: false
+          name: os_object
+          value: "{}"
+        - disabled: false
+          name: os_object.name
+          value: rawParsed.device.platform_name
+        - disabled: false
+          name: os_object.version
+          value: rawParsed.device.os_version
+        - disabled: false
+          name: os_object.type_id
+          value: 'rawParsed.device.platform_name.includes("Windows") ? 100 :
+            rawParsed.device.platform_name.includes("Linux") ? 200 :
+            rawParsed.device.platform_name.includes("mac") ? 300 : 0'
+        - disabled: false
+          name: os_object.type
+          value: "rawParsed.device.platform_name.includes(\"Windows\") ? 'Windows' :
+            rawParsed.device.platform_name.includes(\"Linux\") ? 'Linux' :
+            rawParsed.device.platform_name.includes(\"mac\") ? 'macOS' :
+            'Unknown'"
+    groupId: c5yBAR
+    description: Set OS Device field
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
         - name: device
           value: "{}"
           disabled: false
+        - disabled: false
+          name: device.os
+          value: os_object
         - name: device.uid
           value: rawParsed.device.device_id
         - name: device.hostname
@@ -32,13 +59,13 @@ functions:
         - disabled: false
           name: device.mac
           value: rawParsed.device.mac_address
-        - disabled: false
-          name: device.os
-          value: rawParsed.device.platform_name
         - name: device.vendor_name
           value: rawParsed.device.bios_manufacturer
         - name: device.type
           value: rawParsed.device.product_type_desc
+        - disabled: false
+          name: device.domain
+          value: rawParsed.device.machine_domain
     description: Set device Detection field
     groupId: c5yBAR
   - id: eval
@@ -190,6 +217,7 @@ functions:
         - confidence*
         - raw_data
         - status_*
+        - device*
       remove:
         - "*"
     description: Drop fields non-OCSF fields
@@ -197,5 +225,5 @@ streamtags:
   - cpe
 groups:
   c5yBAR:
-    name: Set OCSF Vulnerability fields
+    name: Set OCSF Detection Finding fields
     index: 2

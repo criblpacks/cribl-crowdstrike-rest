@@ -13,13 +13,72 @@ functions:
         - name: rawParsed
           value: JSON.parse(_raw)
     description: Parse the JSON that is in _raw
-  - id: eval
+  - id: comment
     filter: "true"
     disabled: null
+    conf:
+      comment: Edit crowdstrike_device_type_mapping.csv as needed to add custom
+        product_type_desc values
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - disabled: false
+          name: os_object
+          value: "{}"
+        - disabled: false
+          name: os_object.name
+          value: rawParsed.host_info.platform
+        - disabled: false
+          name: os_object.build
+          value: rawParsed.host_info.os_build
+        - disabled: false
+          name: os_object.version
+          value: rawParsed.host_info.os_version
+        - disabled: false
+          name: os_object.type_id
+          value: 'rawParsed.host_info.platform.includes("Windows") ? 100 :
+            rawParsed.host_info.platform.includes("Linux") ? 200 :
+            rawParsed.host_info.platform.includes("mac") ? 300 : 0'
+        - disabled: false
+          name: os_object.type
+          value: "rawParsed.host_info.platform.includes(\"Windows\") ? 'Windows' :
+            rawParsed.host_info.platform.includes(\"Linux\") ? 'Linux' :
+            rawParsed.host_info.platform.includes(\"mac\") ? 'macOS' :
+            'Unknown'"
+    groupId: tlhTmH
+    description: Set os field
+  - id: lookup
+    filter: "true"
+    disabled: false
+    conf:
+      dbLookup: false
+      matchMode: exact
+      reloadPeriodSec: -1
+      inFields:
+        - eventField: rawParsed.host_info.product_type_desc
+          lookupField: product_type_desc
+      addToEvent: false
+      ignoreCase: false
+      file: crowdstrike_device_type_mapping.csv
+      outFields:
+        - lookupField: type_id
+          defaultValue: "0"
+        - lookupField: type
+          defaultValue: Unknown
+    description: Lookup type_id and type
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
     conf:
       add:
         - name: device
           value: "{}"
+        - disabled: false
+          name: device.os
+          value: os_object
         - name: device.uid
           value: rawParsed.host_info.device_id
         - name: device.hostname
@@ -29,20 +88,20 @@ functions:
         - disabled: false
           name: device.mac
           value: rawParsed.host_info.mac_address
-        - disabled: false
-          name: device.os
-          value: rawParsed.host_info.os_product_name
         - name: device.vendor_name
-          value: rawParsed.host_info.bios_manufacturer
+          value: rawParsed.host_info.system_manufacturer
         - name: device.type_id
-          value: rawParsed.host_info.type_id
+          value: type_id
         - name: device.type
-          value: rawParsed.host_info.product_type_desc
+          value: type
+        - disabled: false
+          name: device.domain
+          value: rawParsed.host_info.machine_domain
     description: Set device Vulnerability field
     groupId: tlhTmH
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: false
     conf:
       add:
         - name: metadata
@@ -68,7 +127,7 @@ functions:
     groupId: tlhTmH
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: false
     conf:
       add:
         - name: unmapped
@@ -77,8 +136,6 @@ functions:
           value: rawParsed.aid
         - name: unmapped.cid
           value: rawParsed.cid
-        - name: unmapped.apps
-          value: rawParsed.apps
         - name: unmapped.remediation
           value: rawParsed.remediation
         - name: unmapped.suppression_info
@@ -87,7 +144,7 @@ functions:
     groupId: tlhTmH
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: false
     conf:
       add:
         - name: activity_id
@@ -161,7 +218,7 @@ functions:
     groupId: tlhTmH
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: false
     conf:
       keep:
         - unmapped.*
@@ -178,6 +235,7 @@ functions:
         - device*
         - status*
         - severity*
+        - raw_data
       remove:
         - "*"
     description: Drop fields non-OCSF fields
@@ -186,7 +244,8 @@ streamtags:
 groups:
   tlhTmH:
     name: Set OCSF Vulnerability fields
-    index: 2
+    index: 3
+    disabled: false
 description: |-
   Map Crowdstrike Vulnerabilities to OCSF Class 2002 - Vulnerability Finding. 
 

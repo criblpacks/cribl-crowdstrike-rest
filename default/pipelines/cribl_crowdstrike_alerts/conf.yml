@@ -71,4 +71,4 @@ functions:
     disabled: false
     conf:
       processor: cribl_crowdstrike_alerts_ocsf
-    description: Format data to OCSF
+    description: Format data as OCSF
