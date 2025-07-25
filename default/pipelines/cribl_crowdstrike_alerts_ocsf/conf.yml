@@ -1,0 +1,201 @@
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Map Crowdstrike Alerts data to the Detection Finding (2004) Class
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: rawParsed
+          value: JSON.parse(_raw)
+    description: Parse the JSON that is in _raw
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - disabled: true
+          name: orig_device
+          value: device
+        - name: device
+          value: "{}"
+          disabled: false
+        - name: device.uid
+          value: rawParsed.device.device_id
+        - name: device.hostname
+          value: rawParsed.device.hostname
+        - name: device.ip
+          value: rawParsed.device.local_ip
+        - disabled: false
+          name: device.mac
+          value: rawParsed.device.mac_address
+        - disabled: false
+          name: device.os
+          value: rawParsed.device.platform_name
+        - name: device.vendor_name
+          value: rawParsed.device.bios_manufacturer
+        - name: device.type
+          value: rawParsed.device.product_type_desc
+    description: Set device Detection field
+    groupId: c5yBAR
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: metadata
+          value: "{}"
+        - name: metadata.product
+          value: "{}"
+        - name: metadata.product.name
+          value: "'Crowdstrike Falcon Insight'"
+        - name: metadata.product.vendor_name
+          value: "'CrowdStrike'"
+        - name: metadata.product.uid
+          value: "'crowdstrike_falcon_insight'"
+        - name: metadata.product.version
+          value: rawParsed.device.agent_version
+        - name: metadata.created_time
+          value: rawParsed.created_timestamp
+        - disabled: false
+          name: metadata.updated_time
+          value: rawParsed.updated_timestamp
+        - name: metadata.version
+          value: "'1.4.0-detection_finding-2004'"
+    description: Set metadata Detection field
+    groupId: c5yBAR
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: finding_info
+          value: "{}"
+        - name: finding_info.uid
+          value: rawParsed.id
+        - name: finding_info.title
+          value: rawParsed.display_name
+        - name: finding_info.analytic
+          value: "{}"
+        - name: finding_info.analytic.name
+          value: "'CrowdStrike Falcon'"
+        - name: finding_info.analytic.type_id
+          value: "1"
+        - name: finding_info.analytic.uid
+          value: rawParsed.composite_id
+    description: Set finding_info Detection field
+    groupId: c5yBAR
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: activity_id
+          value: "rawParsed.automated_triage.triage_recommendation === 'close' ? 3 :
+            rawParsed.automated_triage.triage_recommendation === 'escalate' ? 2
+            : 1"
+        - disabled: false
+          name: activity_name
+          value: "rawParsed.automated_triage.triage_recommendation === 'close' ? 'Close' :
+            rawParsed.automated_triage.triage_recommendation === 'escalate' ?
+            'Update' : 'Create'"
+        - name: category_uid
+          value: "2"
+        - disabled: false
+          name: category_name
+          value: "'Findings'"
+        - name: class_uid
+          value: "2004"
+        - disabled: false
+          name: class_name
+          value: "'Detection Finding'"
+        - name: confidence_id
+          value: "rawParsed.automated_triage.triage_outcome_confidence >= 90 ? 3 :
+            rawParsed.automated_triage.triage_outcome_confidence >= 50 ? 2 : 1"
+        - disabled: false
+          name: confidence
+          value: "rawParsed.automated_triage.triage_outcome_confidence >= 90 ? 'High' :
+            rawParsed.automated_triage.triage_outcome_confidence >= 50 ?
+            'Medium' : 'Low'"
+        - name: is_alert
+          value: "rawParsed.automated_triage.triage_outcome === 'true_positive' ? true :
+            false"
+        - name: message
+          value: rawParsed.description
+        - name: observables
+          value: "[{name:rawParsed.filename, type_id:7},{name:rawParsed.cmdline,
+            type_id:13}, {name:rawParsed.user_name, type_id:21},
+            {name:rawParsed.user_principal, type_id:31}]"
+        - name: resources
+          value: "[{hostname:rawParsed.device.hostname, uid: rawParsed.aggregate_id,
+            ip:rawParsed.device.local_ip}]"
+        - name: severity_id
+          value: "rawParsed.severity_name==='Critical' ? 5 :
+            rawParsed.severity_name==='High' ? 4 :
+            rawParsed.severity_name==='Medium' ? 3 :
+            rawParsed.severity_name==='Low' ? 2 :
+            rawParsed.severity_name==='Informational' ? 1 : 0"
+        - disabled: false
+          name: severity
+          value: rawParsed.severity_name
+        - name: status_id
+          value: "rawParsed.automated_triage.automated_triage.triage_outcome ===
+            'false_positive' ? 3 :
+            rawParsed.automated_triage.triage_recommendation === 'true_positive'
+            ? 2 : 1"
+        - name: status_code
+          value: "automated_triage.automated_triage.triage_outcome === 'false_positive' ?
+            'Suppressed' : automated_triage.triage_recommendation ===
+            'true_positive' ? 'In Progress' : 'New'"
+        - name: status_detail
+          value: rawParsed.automated_triage.triage_explanation
+        - name: time
+          value: _time
+        - name: timezone_offset
+          value: "0"
+        - name: type_uid
+          value: "2004 * 100 + (rawParsed.automated_triage.triage_recommendation ===
+            'close' ? 3 : rawParsed.automated_triage.triage_recommendation ===
+            'escalate' ? 2 : 1)"
+        - disabled: false
+          name: raw_data
+          value: _raw
+        - name: unmapped
+          value: "[{tactic: rawParsed.tactic, tactic_id: rawParsed.tactic_id, technique:
+            rawParsed.technique}]"
+    description: Set remaining OCSF Detection fields
+    groupId: c5yBAR
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      keep:
+        - unmapped.*
+        - message
+        - category_uid
+        - finding_info.*
+        - time
+        - resources.*
+        - observables.*
+        - timezone_offset
+        - is_alert
+        - type_uid
+        - metadata.*
+        - class*
+        - activity*
+        - severity*
+        - confidence*
+        - raw_data
+        - status_*
+      remove:
+        - "*"
+    description: Drop fields non-OCSF fields
+streamtags:
+  - cpe
+groups:
+  c5yBAR:
+    name: Set OCSF Vulnerability fields
+    index: 2

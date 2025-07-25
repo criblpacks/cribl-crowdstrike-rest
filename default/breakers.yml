@@ -23,9 +23,9 @@ Crowdstrike_API:
       eventBreakerRegex: /[\n\r]+(?!\s)/
       name: Crowdstrike_Devices
       jsonTimeField: modified_timestamp
-    - condition: _raw.includes("legacy-detects")
+    - condition: _raw.includes("legacy-detects") || _raw.includes('automated_triage')
       type: json_array
-      timestampAnchorRegex: /created_timestamp[^\d]+/
+      timestampAnchorRegex: /created_timestamp/
       timestamp:
         type: auto
         length: 50
@@ -38,7 +38,7 @@ Crowdstrike_API:
       shouldUseDataRaw: false
       jsonExtractAll: false
       eventBreakerRegex: /[\n\r]+(?!\s)/
-      name: Crowdstrike_Detections
+      name: Crowdstrike_Detections_and_Alerts
       jsonArrayField: resources
     - condition: _raw.includes('exploitability_score')
       type: json_array

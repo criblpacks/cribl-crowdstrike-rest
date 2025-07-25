@@ -68,6 +68,9 @@ functions:
           value: "'Collect'"
         - name: class_uid
           value: "5001"
+        - disabled: false
+          name: class_name
+          value: "'Device Inventory Info'"
         - name: severity_id
           value: "1"
         - name: type_uid
@@ -108,69 +111,6 @@ functions:
       remove: []
     description: Create OCSF-compatible fields and objects; preserve required fields
       and drop everything else.
-  - id: eval
-    filter: "true"
-    disabled: true
-    conf:
-      add:
-        - name: time
-          value: _time
-        - name: timezone_offset
-          value: "0"
-        - name: category_uid
-          value: "5"
-        - disabled: false
-          name: category
-          value: "'Discovery'"
-        - name: class_uid
-          value: "5001"
-        - name: activity_id
-          value: "2"
-        - name: type_uid
-          value: "500102"
-        - name: status
-          value: status
-        - name: status_id
-          value: "status === 'normal' ? 1 : 99"
-        - name: status_detail
-          value: provision_status
-        - name: status_code
-          value: "''"
-        - name: device
-          value: "{}"
-        - name: device.uid
-          value: device_id
-        - name: device.hostname
-          value: hostname
-        - name: device.vendor_name
-          value: bios_manufacturer
-        - name: device.type_id
-          value: "platform_name === 'Windows' && product_type_desc === 'Workstation' ? 2 :
-            0"
-        - name: device.type
-          value: "device.type_id === 2 ? 'desktop' : 'unknown'"
-        - name: observables
-          value: "[{name:'interface.ip',type_id:2,value:local_ip},{name:'interface.mac',t\
-            ype_id:3,value:mac_address}]"
-        - name: metadata
-          value: "{}"
-        - name: metadata.product
-          value: "{}"
-        - name: metadata.product.name
-          value: "'CrowdStrike Falcon'"
-        - name: metadata.product.vendor_name
-          value: "'CrowdStrike'"
-        - name: metadata.product.version
-          value: agent_version
-        - name: metadata.version
-          value: "'1.4.0-inventory_info-5001'"
-        - name: metadata.log_name
-          value: "'CrowdStrike Device Inventory'"
-        - name: metadata.log_provider
-          value: "'CrowdStrike Falcon API'"
-        - name: unmapped
-          value: "{}"
-    description: Create OCSF core, status, device, observables and metadata fields.
   - id: code
     filter: "true"
     disabled: true
@@ -207,7 +147,6 @@ functions:
         - status_id
         - status
         - observables.*
-        - class_uid
         - timezone_offset
         - device.*
         - type_uid
@@ -215,10 +154,11 @@ functions:
         - activity_*
         - raw_data
         - category_*
+        - class_*
       remove:
         - "*"
         - __*
-    description: Drop fields not in the keep list.
+    description: Drop fields non-OCSF fields
 streamtags:
   - cpe
 groups: {}

@@ -1,4 +1,10 @@
 functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Map Crowdstrike Vulnerability data to the Vulnerability Finding (2002)
+        Class
   - id: eval
     filter: "true"
     disabled: null
@@ -12,68 +18,59 @@ functions:
     disabled: null
     conf:
       add:
-        - name: category_uid
-          value: "2"
-        - name: finding_info
+        - name: device
           value: "{}"
-        - name: finding_info.uid
-          value: rawParsed.id
-        - name: finding_info.title
-          value: rawParsed.vulnerability_id
-        - name: finding_info.analytic
-          value: "{}"
-        - name: finding_info.analytic.name
-          value: "'Falcon Intelligence Feeds'"
-        - name: finding_info.analytic.type_id
-          value: "5"
-        - name: time
-          value: new Date(rawParsed.created_timestamp).getTime()/1000
-        - name: activity_id
-          value: "1"
-        - name: class_uid
-          value: "2002"
-        - name: severity_id
-          value: "rawParsed.cve && rawParsed.cve.severity === 'LOW' ? 2 : rawParsed.cve &&
-            rawParsed.cve.severity === 'MEDIUM' ? 3 : rawParsed.cve &&
-            rawParsed.cve.severity === 'HIGH' ? 4 : rawParsed.cve &&
-            rawParsed.cve.severity === 'CRITICAL' ? 5 : 0"
-        - name: type_uid
-          value: class_uid * 100 + activity_id
+        - name: device.uid
+          value: rawParsed.host_info.device_id
+        - name: device.hostname
+          value: rawParsed.host_info.hostname
+        - name: device.ip
+          value: rawParsed.host_info.local_ip
+        - disabled: false
+          name: device.mac
+          value: rawParsed.host_info.mac_address
+        - disabled: false
+          name: device.os
+          value: rawParsed.host_info.os_product_name
+        - name: device.vendor_name
+          value: rawParsed.host_info.bios_manufacturer
+        - name: device.type_id
+          value: rawParsed.host_info.type_id
+        - name: device.type
+          value: rawParsed.host_info.product_type_desc
+    description: Set device Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
         - name: metadata
           value: "{}"
         - name: metadata.product
           value: "{}"
         - name: metadata.product.name
-          value: "'Falcon Spotlight'"
+          value: "'Crowdstrike Falcon Spotlight'"
         - name: metadata.product.vendor_name
           value: "'CrowdStrike'"
         - name: metadata.product.uid
           value: "'crowdstrike_falcon_spotlight'"
         - name: metadata.product.version
           value: "'v1'"
-        - name: metadata.log_provider
-          value: "'Falcon Intelligence Feeds'"
-        - name: metadata.original_time
+        - name: metadata.created_time
           value: rawParsed.created_timestamp
+        - disabled: false
+          name: metadata.updated_time
+          value: rawParsed.updated_timestamp
         - name: metadata.version
           value: "'1.4.0'"
-        - name: vulnerabilities
-          value: "[{cve:{uid: rawParsed.cve.id, title: rawParsed.cve.description,
-            references: rawParsed.cve.vendor_advisory, cvss:[{base_score:
-            rawParsed.cve.base_score, version:'3.1'}]},
-            cwe:{uid:(rawParsed.cve.cwes && rawParsed.cve.cwes.length > 0 ?
-            rawParsed.cve.cwes[0] : '')}}]"
-        - name: message
-          value: rawParsed.cve.description
-        - name: status_code
-          value: rawParsed.status
-        - name: status_detail
-          value: rawParsed.status + ' on ' + rawParsed.updated_timestamp
-        - name: status_id
-          value: "rawParsed.status === 'open' ? 1 : rawParsed.status === 'fixed' ? 4 : 0"
-        - name: confidence_id
-          value: "rawParsed.confidence === 'confirmed' ? 3 : rawParsed.confidence ===
-            'high' ? 2 : rawParsed.confidence === 'low' ? 1 : 0"
+    description: Set metadata Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
         - name: unmapped
           value: "{}"
         - name: unmapped.aid
@@ -82,59 +79,114 @@ functions:
           value: rawParsed.cid
         - name: unmapped.apps
           value: rawParsed.apps
-        - name: unmapped.host_info
-          value: rawParsed.host_info
         - name: unmapped.remediation
           value: rawParsed.remediation
         - name: unmapped.suppression_info
           value: rawParsed.suppression_info
-        - name: unmapped.source
-          value: source
-        - name: unmapped.host
-          value: host
-        - name: unmapped._time
-          value: _time
-        - name: unmapped.cribl_breaker
-          value: cribl_breaker
+    description: Set unmapped Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: activity_id
+          value: "2"
+        - name: category_uid
+          value: "2"
+        - disabled: false
+          name: category_name
+          value: "'Findings'"
+        - name: class_uid
+          value: "2002"
+        - name: confidence_id
+          value: "rawParsed.confidence === 'confirmed' ? 3 : rawParsed.confidence ===
+            'potential' ? 2 : 0"
+        - disabled: false
+          name: confidence
+          value: "rawParsed.confidence === 'confirmed' ? 'High' : rawParsed.confidence ===
+            'potential' ? 'Medium' : 'Unknown'"
+        - disabled: false
+          name: confidence_score
+          value: rawParsed.cve.base_score
+        - name: finding_info
+          value: "{}"
+        - name: finding_info.uid
+          value: rawParsed.id
+        - name: finding_info.title
+          value: rawParsed.vulnerability_id
+        - name: message
+          value: rawParsed.cve.description
+        - disabled: false
+          name: severity
+          value: rawParsed.cve.severity
+        - name: severity_id
+          value: "rawParsed.cve.severity==='INFORMATIONAL' ? 1 : rawParsed.cve.severity
+            === 'LOW' ? 2 : rawParsed.cve.severity === 'MEDIUM' ? 3 :
+            rawParsed.cve.severity === 'HIGH' ? 4 : rawParsed.cve.severity ===
+            'CRITICAL' ? 5 : 0"
+        - disabled: false
+          name: severity
+          value: "rawParsed.cve.severity==='INFORMATIONAL' ? 'Informational' :
+            rawParsed.cve.severity === 'LOW' ? 'Low' : rawParsed.cve.severity
+            === 'MEDIUM' ? 'Medium' : rawParsed.cve.severity === 'HIGH' ? 'High'
+            : rawParsed.cve.severity === 'CRITICAL' ? 'Critical' : 0"
+        - name: status_code
+          value: rawParsed.status
+        - name: status_detail
+          value: rawParsed.status + ' on ' + rawParsed.updated_timestamp
+        - name: status_id
+          value: "rawParsed.status === 'open' ? 2 : rawParsed.status === 'reopen' ? 1 :
+            rawParsed.status === 'closed' ? 4 : rawParsed.status === 'expired' ?
+            5 : 0"
+        - disabled: false
+          name: status
+          value: "rawParsed.status === 'open' ? 'In Progress' : rawParsed.status ===
+            'reopen' ? 'New' : rawParsed.status === 'closed' ? 'Resolved' :
+            rawParsed.status === 'expired' ? 'Archived' : 'Unknown'"
+        - name: time
+          value: new Date(rawParsed.created_timestamp).getTime()/1000
+        - name: type_uid
+          value: class_uid * 100 + activity_id
+        - name: vulnerabilities
+          value: "[{cve:{uid: rawParsed.cve.id, title: rawParsed.cve.description,
+            references: rawParsed.cve.vendor_advisory, cvss:[{base_score:
+            rawParsed.cve.base_score, version:'3.1'}]},
+            cwe:{uid:(rawParsed.cve.cwes && rawParsed.cve.cwes.length > 0 ?
+            rawParsed.cve.cwes[0] : '')}}]"
+        - disabled: false
+          name: raw_data
+          value: _raw
+    description: Set remaining OCSF Vulnerability fields
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
       keep:
         - unmapped.*
         - message
-        - category_uid
         - finding_info.*
-        - status_detail
-        - status_code
         - time
-        - status_id
         - activity_id
-        - confidence_id
         - class_uid
-        - severity_id
         - type_uid
         - metadata.*
         - vulnerabilities.*
+        - confidence*
+        - category*
+        - device*
+        - status*
+        - severity*
       remove:
-        - id
-        - vulnerability_id
-        - created_timestamp
-        - updated_timestamp
-        - status
-        - cve
-        - cwes
-        - vendor_advisory
-        - base_score
-        - confidence
-        - __id
-        - __cloneCount
-        - __ctrlFields
-        - __eventId
-        - __final
-        - __inputId
-        - __criblEventType
         - "*"
-    description: Build OCSF Finding fields, map/enrich, and clean up
+    description: Drop fields non-OCSF fields
 streamtags:
   - cpe
-groups: {}
+groups:
+  tlhTmH:
+    name: Set OCSF Vulnerability fields
+    index: 2
 description: |-
   Map Crowdstrike Vulnerabilities to OCSF Class 2002 - Vulnerability Finding. 
 

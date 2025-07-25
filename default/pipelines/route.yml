@@ -13,6 +13,17 @@ routes:
     filter: _raw.includes('agent_local_time')
     clones: []
     output: default
+  - id: 2cBUSz
+    name: cribl_crowdstrike_vulnerabilities_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_vulnerabilities_ocsf
+    description: ""
+    enableOutputExpression: false
+    outputExpression: null
+    filter: _raw.includes('vulnerability_id')
+    clones: []
+    output: default
   - id: default
     name: default
     final: true

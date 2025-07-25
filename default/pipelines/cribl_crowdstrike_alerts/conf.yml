@@ -1,6 +1,9 @@
 output: default
 streamtags: []
-groups: {}
+groups:
+  XouL2q:
+    name: Filter and Drop
+    index: 3
 asyncFuncTimeout: 1000
 functions:
   - id: comment
@@ -28,6 +31,7 @@ functions:
     disabled: false
     conf: {}
     description: Filter out low severity alerts
+    groupId: XouL2q
   - id: eval
     filter: "true"
     disabled: false
@@ -36,6 +40,7 @@ functions:
         - "*_id"
         - "*_timestamp"
     description: Remove unneeded/redundant fields
+    groupId: XouL2q
   - id: serialize
     filter: "true"
     disabled: null
@@ -61,3 +66,9 @@ functions:
       remove:
         - "*"
     description: Cleanup fields
+  - id: chain
+    filter: "true"
+    disabled: false
+    conf:
+      processor: cribl_crowdstrike_alerts_ocsf
+    description: Format data to OCSF
