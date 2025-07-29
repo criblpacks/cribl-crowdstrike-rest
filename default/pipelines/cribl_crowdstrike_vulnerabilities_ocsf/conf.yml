@@ -7,7 +7,7 @@ functions:
         Class
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: true
     conf:
       add:
         - name: rawParsed
@@ -29,21 +29,21 @@ functions:
           value: "{}"
         - disabled: false
           name: os_object.name
-          value: rawParsed.host_info.platform
+          value: host_info.platform
         - disabled: false
           name: os_object.build
-          value: rawParsed.host_info.os_build
+          value: host_info.os_build
         - disabled: false
           name: os_object.version
-          value: rawParsed.host_info.os_version
+          value: host_info.os_version
         - disabled: false
           name: os_object.type_id
-          value: 'rawParsed.host_info.platform.includes("Windows") ? 100 :
+          value: 'host_info.platform.includes("Windows") ? 100 :
             rawParsed.host_info.platform.includes("Linux") ? 200 :
             rawParsed.host_info.platform.includes("mac") ? 300 : 0'
         - disabled: false
           name: os_object.type
-          value: "rawParsed.host_info.platform.includes(\"Windows\") ? 'Windows' :
+          value: "host_info.platform.includes(\"Windows\") ? 'Windows' :
             rawParsed.host_info.platform.includes(\"Linux\") ? 'Linux' :
             rawParsed.host_info.platform.includes(\"mac\") ? 'macOS' :
             'Unknown'"
@@ -57,8 +57,8 @@ functions:
       matchMode: exact
       reloadPeriodSec: -1
       inFields:
-        - eventField: rawParsed.host_info.product_type_desc
-          lookupField: product_type_desc
+        - eventField: host_info.product_type_desc
+          lookupField: product_type_description
       addToEvent: false
       ignoreCase: false
       file: crowdstrike_device_type_mapping.csv
@@ -80,23 +80,23 @@ functions:
           name: device.os
           value: os_object
         - name: device.uid
-          value: rawParsed.host_info.device_id
+          value: host_info.device_id
         - name: device.hostname
-          value: rawParsed.host_info.hostname
+          value: host_info.hostname
         - name: device.ip
-          value: rawParsed.host_info.local_ip
+          value: host_info.local_ip
         - disabled: false
           name: device.mac
-          value: rawParsed.host_info.mac_address
+          value: host_info.mac_address
         - name: device.vendor_name
-          value: rawParsed.host_info.system_manufacturer
+          value: host_info.system_manufacturer
         - name: device.type_id
           value: type_id
         - name: device.type
           value: type
         - disabled: false
           name: device.domain
-          value: rawParsed.host_info.machine_domain
+          value: host_info.machine_domain
     description: Set device Vulnerability field
     groupId: tlhTmH
   - id: eval
@@ -117,10 +117,10 @@ functions:
         - name: metadata.product.version
           value: "'v1'"
         - name: metadata.created_time
-          value: rawParsed.created_timestamp
+          value: created_timestamp
         - disabled: false
           name: metadata.updated_time
-          value: rawParsed.updated_timestamp
+          value: updated_timestamp
         - name: metadata.version
           value: "'1.4.0'"
     description: Set metadata Vulnerability field
@@ -133,13 +133,13 @@ functions:
         - name: unmapped
           value: "{}"
         - name: unmapped.aid
-          value: rawParsed.aid
+          value: aid
         - name: unmapped.cid
-          value: rawParsed.cid
+          value: cid
         - name: unmapped.remediation
-          value: rawParsed.remediation
+          value: remediation
         - name: unmapped.suppression_info
-          value: rawParsed.suppression_info
+          value: suppression_info
     description: Set unmapped Vulnerability field
     groupId: tlhTmH
   - id: eval
@@ -156,61 +156,59 @@ functions:
           value: "'Findings'"
         - name: class_uid
           value: "2002"
+        - disabled: false
+          name: class_name
+          value: "'Vulnerability Finding'"
         - name: confidence_id
-          value: "rawParsed.confidence === 'confirmed' ? 3 : rawParsed.confidence ===
-            'potential' ? 2 : 0"
+          value: "confidence === 'confirmed' ? 3 : confidence === 'potential' ? 2 : 0"
         - disabled: false
           name: confidence
-          value: "rawParsed.confidence === 'confirmed' ? 'High' : rawParsed.confidence ===
-            'potential' ? 'Medium' : 'Unknown'"
+          value: "confidence === 'confirmed' ? 'High' : confidence === 'potential' ?
+            'Medium' : 'Unknown'"
         - disabled: false
           name: confidence_score
-          value: rawParsed.cve.base_score
+          value: cve.base_score
         - name: finding_info
           value: "{}"
         - name: finding_info.uid
-          value: rawParsed.id
+          value: id
         - name: finding_info.title
-          value: rawParsed.vulnerability_id
+          value: vulnerability_id
         - name: message
-          value: rawParsed.cve.description
+          value: cve.description
         - disabled: false
           name: severity
-          value: rawParsed.cve.severity
+          value: cve.severity
         - name: severity_id
-          value: "rawParsed.cve.severity==='INFORMATIONAL' ? 1 : rawParsed.cve.severity
-            === 'LOW' ? 2 : rawParsed.cve.severity === 'MEDIUM' ? 3 :
-            rawParsed.cve.severity === 'HIGH' ? 4 : rawParsed.cve.severity ===
-            'CRITICAL' ? 5 : 0"
+          value: "cve.severity==='INFORMATIONAL' ? 1 : cve.severity === 'LOW' ? 2 :
+            cve.severity === 'MEDIUM' ? 3 : cve.severity === 'HIGH' ? 4 :
+            cve.severity === 'CRITICAL' ? 5 : 0"
         - disabled: false
           name: severity
-          value: "rawParsed.cve.severity==='INFORMATIONAL' ? 'Informational' :
-            rawParsed.cve.severity === 'LOW' ? 'Low' : rawParsed.cve.severity
-            === 'MEDIUM' ? 'Medium' : rawParsed.cve.severity === 'HIGH' ? 'High'
-            : rawParsed.cve.severity === 'CRITICAL' ? 'Critical' : 0"
+          value: "cve.severity==='INFORMATIONAL' ? 'Informational' : cve.severity ===
+            'LOW' ? 'Low' : cve.severity === 'MEDIUM' ? 'Medium' : cve.severity
+            === 'HIGH' ? 'High' : cve.severity === 'CRITICAL' ? 'Critical' : 0"
         - name: status_code
-          value: rawParsed.status
+          value: status
         - name: status_detail
-          value: rawParsed.status + ' on ' + rawParsed.updated_timestamp
+          value: status + ' on ' + updated_timestamp
         - name: status_id
-          value: "rawParsed.status === 'open' ? 2 : rawParsed.status === 'reopen' ? 1 :
-            rawParsed.status === 'closed' ? 4 : rawParsed.status === 'expired' ?
-            5 : 0"
+          value: "status === 'open' ? 2 : status === 'reopen' ? 1 : status === 'closed' ?
+            4 : status === 'expired' ? 5 : 0"
         - disabled: false
           name: status
-          value: "rawParsed.status === 'open' ? 'In Progress' : rawParsed.status ===
-            'reopen' ? 'New' : rawParsed.status === 'closed' ? 'Resolved' :
-            rawParsed.status === 'expired' ? 'Archived' : 'Unknown'"
+          value: "status === 'open' ? 'In Progress' : status === 'reopen' ? 'New' : status
+            === 'closed' ? 'Resolved' : status === 'expired' ? 'Archived' :
+            'Unknown'"
         - name: time
-          value: new Date(rawParsed.created_timestamp).getTime()/1000
+          value: new Date(created_timestamp).getTime()/1000
         - name: type_uid
           value: class_uid * 100 + activity_id
         - name: vulnerabilities
-          value: "[{cve:{uid: rawParsed.cve.id, title: rawParsed.cve.description,
-            references: rawParsed.cve.vendor_advisory, cvss:[{base_score:
-            rawParsed.cve.base_score, version:'3.1'}]},
-            cwe:{uid:(rawParsed.cve.cwes && rawParsed.cve.cwes.length > 0 ?
-            rawParsed.cve.cwes[0] : '')}}]"
+          value: "[{cve:{uid: cve.id, title: cve.description, references:
+            cve.vendor_advisory, cvss:[{base_score: cve.base_score,
+            version:'3.1'}]}, cwe:{uid:(cve.cwes && cve.cwes.length > 0 ?
+            cve.cwes[0] : '')}}]"
         - disabled: false
           name: raw_data
           value: _raw
@@ -238,7 +236,8 @@ functions:
         - raw_data
       remove:
         - "*"
-    description: Drop fields non-OCSF fields
+        - _*
+    description: Drop non-OCSF fields
 streamtags:
   - cpe
 groups:

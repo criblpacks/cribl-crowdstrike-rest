@@ -9,34 +9,25 @@ functions:
     disabled: null
     conf:
       add:
-        - name: rawParsed
-          value: JSON.parse(_raw)
-    description: Parse the JSON that is in _raw
-  - id: eval
-    filter: "true"
-    disabled: null
-    conf:
-      add:
         - disabled: false
           name: os_object
           value: "{}"
         - disabled: false
           name: os_object.name
-          value: rawParsed.device.platform_name
+          value: device.platform_name
         - disabled: false
           name: os_object.version
-          value: rawParsed.device.os_version
+          value: device.os_version
         - disabled: false
           name: os_object.type_id
-          value: 'rawParsed.device.platform_name.includes("Windows") ? 100 :
-            rawParsed.device.platform_name.includes("Linux") ? 200 :
-            rawParsed.device.platform_name.includes("mac") ? 300 : 0'
+          value: 'device.platform_name.includes("Windows") ? 100 :
+            device.platform_name.includes("Linux") ? 200 :
+            device.platform_name.includes("mac") ? 300 : 0'
         - disabled: false
           name: os_object.type
-          value: "rawParsed.device.platform_name.includes(\"Windows\") ? 'Windows' :
-            rawParsed.device.platform_name.includes(\"Linux\") ? 'Linux' :
-            rawParsed.device.platform_name.includes(\"mac\") ? 'macOS' :
-            'Unknown'"
+          value: "device.platform_name.includes(\"Windows\") ? 'Windows' :
+            device.platform_name.includes(\"Linux\") ? 'Linux' :
+            device.platform_name.includes(\"mac\") ? 'macOS' : 'Unknown'"
     groupId: c5yBAR
     description: Set OS Device field
   - id: eval
@@ -44,6 +35,9 @@ functions:
     disabled: null
     conf:
       add:
+        - disabled: false
+          name: resources
+          value: "[{hostname:device.hostname, uid: aggregate_id, ip:device.local_ip}]"
         - name: device
           value: "{}"
           disabled: false
@@ -51,21 +45,21 @@ functions:
           name: device.os
           value: os_object
         - name: device.uid
-          value: rawParsed.device.device_id
+          value: device.device_id
         - name: device.hostname
-          value: rawParsed.device.hostname
+          value: device.hostname
         - name: device.ip
-          value: rawParsed.device.local_ip
+          value: device.local_ip
         - disabled: false
           name: device.mac
-          value: rawParsed.device.mac_address
+          value: device.mac_address
         - name: device.vendor_name
-          value: rawParsed.device.bios_manufacturer
+          value: device.bios_manufacturer
         - name: device.type
-          value: rawParsed.device.product_type_desc
+          value: device.product_type_desc
         - disabled: false
           name: device.domain
-          value: rawParsed.device.machine_domain
+          value: device.machine_domain
     description: Set device Detection field
     groupId: c5yBAR
   - id: eval
@@ -84,12 +78,12 @@ functions:
         - name: metadata.product.uid
           value: "'crowdstrike_falcon_insight'"
         - name: metadata.product.version
-          value: rawParsed.device.agent_version
+          value: device.agent_version
         - name: metadata.created_time
-          value: rawParsed.created_timestamp
+          value: created_timestamp
         - disabled: false
           name: metadata.updated_time
-          value: rawParsed.updated_timestamp
+          value: updated_timestamp
         - name: metadata.version
           value: "'1.4.0-detection_finding-2004'"
     description: Set metadata Detection field
@@ -102,9 +96,9 @@ functions:
         - name: finding_info
           value: "{}"
         - name: finding_info.uid
-          value: rawParsed.id
+          value: id
         - name: finding_info.title
-          value: rawParsed.display_name
+          value: display_name
         - name: finding_info.analytic
           value: "{}"
         - name: finding_info.analytic.name
@@ -112,7 +106,7 @@ functions:
         - name: finding_info.analytic.type_id
           value: "1"
         - name: finding_info.analytic.uid
-          value: rawParsed.composite_id
+          value: composite_id
     description: Set finding_info Detection field
     groupId: c5yBAR
   - id: eval
@@ -121,14 +115,13 @@ functions:
     conf:
       add:
         - name: activity_id
-          value: "rawParsed.automated_triage.triage_recommendation === 'close' ? 3 :
-            rawParsed.automated_triage.triage_recommendation === 'escalate' ? 2
-            : 1"
+          value: "automated_triage.triage_recommendation === 'close' ? 3 :
+            automated_triage.triage_recommendation === 'escalate' ? 2 : 1"
         - disabled: false
           name: activity_name
-          value: "rawParsed.automated_triage.triage_recommendation === 'close' ? 'Close' :
-            rawParsed.automated_triage.triage_recommendation === 'escalate' ?
-            'Update' : 'Create'"
+          value: "automated_triage.triage_recommendation === 'close' ? 'Close' :
+            automated_triage.triage_recommendation === 'escalate' ? 'Update' :
+            'Create'"
         - name: category_uid
           value: "2"
         - disabled: false
@@ -140,59 +133,48 @@ functions:
           name: class_name
           value: "'Detection Finding'"
         - name: confidence_id
-          value: "rawParsed.automated_triage.triage_outcome_confidence >= 90 ? 3 :
-            rawParsed.automated_triage.triage_outcome_confidence >= 50 ? 2 : 1"
+          value: "automated_triage.triage_outcome_confidence >= 90 ? 3 :
+            automated_triage.triage_outcome_confidence >= 50 ? 2 : 1"
         - disabled: false
           name: confidence
-          value: "rawParsed.automated_triage.triage_outcome_confidence >= 90 ? 'High' :
-            rawParsed.automated_triage.triage_outcome_confidence >= 50 ?
-            'Medium' : 'Low'"
+          value: "automated_triage.triage_outcome_confidence >= 90 ? 'High' :
+            automated_triage.triage_outcome_confidence >= 50 ? 'Medium' : 'Low'"
         - name: is_alert
-          value: "rawParsed.automated_triage.triage_outcome === 'true_positive' ? true :
-            false"
+          value: "automated_triage.triage_outcome === 'true_positive' ? true : false"
         - name: message
-          value: rawParsed.description
+          value: description
         - name: observables
-          value: "[{name:rawParsed.filename, type_id:7},{name:rawParsed.cmdline,
-            type_id:13}, {name:rawParsed.user_name, type_id:21},
-            {name:rawParsed.user_principal, type_id:31}]"
-        - name: resources
-          value: "[{hostname:rawParsed.device.hostname, uid: rawParsed.aggregate_id,
-            ip:rawParsed.device.local_ip}]"
+          value: "[{name:filename, type_id:7},{name:cmdline, type_id:13}, {name:user_name,
+            type_id:21}, {name:user_principal, type_id:31}]"
         - name: severity_id
-          value: "rawParsed.severity_name==='Critical' ? 5 :
-            rawParsed.severity_name==='High' ? 4 :
-            rawParsed.severity_name==='Medium' ? 3 :
-            rawParsed.severity_name==='Low' ? 2 :
-            rawParsed.severity_name==='Informational' ? 1 : 0"
+          value: "severity_name==='Critical' ? 5 : severity_name==='High' ? 4 :
+            severity_name==='Medium' ? 3 : severity_name==='Low' ? 2 :
+            severity_name==='Informational' ? 1 : 0"
         - disabled: false
           name: severity
-          value: rawParsed.severity_name
+          value: severity_name
         - name: status_id
-          value: "rawParsed.automated_triage.automated_triage.triage_outcome ===
-            'false_positive' ? 3 :
-            rawParsed.automated_triage.triage_recommendation === 'true_positive'
-            ? 2 : 1"
+          value: "automated_triage.automated_triage.triage_outcome === 'false_positive' ?
+            3 : automated_triage.triage_recommendation === 'true_positive' ? 2 :
+            1"
         - name: status_code
           value: "automated_triage.automated_triage.triage_outcome === 'false_positive' ?
             'Suppressed' : automated_triage.triage_recommendation ===
             'true_positive' ? 'In Progress' : 'New'"
         - name: status_detail
-          value: rawParsed.automated_triage.triage_explanation
+          value: automated_triage.triage_explanation
         - name: time
           value: _time
         - name: timezone_offset
           value: "0"
         - name: type_uid
-          value: "2004 * 100 + (rawParsed.automated_triage.triage_recommendation ===
-            'close' ? 3 : rawParsed.automated_triage.triage_recommendation ===
-            'escalate' ? 2 : 1)"
+          value: "2004 * 100 + (automated_triage.triage_recommendation === 'close' ? 3 :
+            automated_triage.triage_recommendation === 'escalate' ? 2 : 1)"
         - disabled: false
           name: raw_data
           value: _raw
         - name: unmapped
-          value: "[{tactic: rawParsed.tactic, tactic_id: rawParsed.tactic_id, technique:
-            rawParsed.technique}]"
+          value: "[{tactic: tactic, tactic_id: tactic_id, technique: technique}]"
     description: Set remaining OCSF Detection fields
     groupId: c5yBAR
   - id: eval
@@ -205,7 +187,6 @@ functions:
         - category_uid
         - finding_info.*
         - time
-        - resources.*
         - observables.*
         - timezone_offset
         - is_alert
@@ -218,6 +199,7 @@ functions:
         - raw_data
         - status_*
         - device*
+        - resources*
       remove:
         - "*"
     description: Drop fields non-OCSF fields
@@ -226,4 +208,4 @@ streamtags:
 groups:
   c5yBAR:
     name: Set OCSF Detection Finding fields
-    index: 2
+    index: 1

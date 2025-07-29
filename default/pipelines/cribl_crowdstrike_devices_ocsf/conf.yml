@@ -4,14 +4,6 @@ functions:
     disabled: null
     conf:
       comment: Map Crowdstrike Device data to the Device Inventory (5001) Class
-  - id: eval
-    filter: "true"
-    disabled: null
-    conf:
-      add:
-        - disabled: false
-          value: JSON.parse(_raw)
-          name: rawParsed
   - id: comment
     filter: "true"
     disabled: null
@@ -211,4 +203,4 @@ streamtags:
 groups:
   CGZA2N:
     name: Set OCSF Device Inventory  fields
-    index: 2
+    index: 1

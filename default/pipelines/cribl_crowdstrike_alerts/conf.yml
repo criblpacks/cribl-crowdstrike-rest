@@ -4,6 +4,10 @@ groups:
   XouL2q:
     name: Filter and Drop
     index: 3
+  gFfQIq:
+    name: Outputs
+    index: 4
+    description: Select the desired output
 asyncFuncTimeout: 1000
 functions:
   - id: comment
@@ -41,9 +45,28 @@ functions:
         - "*_timestamp"
     description: Remove unneeded/redundant fields
     groupId: XouL2q
-  - id: serialize
+  - id: comment
     filter: "true"
     disabled: null
+    conf:
+      comment: Enable to output OCSF (Amazon Security Lake)
+    groupId: gFfQIq
+  - id: chain
+    filter: "true"
+    disabled: true
+    conf:
+      processor: cribl_crowdstrike_alerts_ocsf
+    description: Map to OCSF Detection Finding (2004) Class
+    groupId: gFfQIq
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Output to Splunk
+    groupId: gFfQIq
+  - id: serialize
+    filter: "true"
+    disabled: true
     conf:
       type: json
       dstField: _raw
@@ -51,24 +74,34 @@ functions:
         - "!cribl_*"
         - "!_*"
         - "!host"
-        - "*"
         - "!source"
+        - "!sourcetype"
+        - "!index"
+        - "*"
     description: "Serialize as JSON back into _raw "
+    groupId: gFfQIq
   - id: eval
     filter: "true"
-    disabled: null
+    disabled: true
     conf:
       keep:
         - _*
         - cribl_*
         - host
         - source
+        - sourcetype
+        - index
       remove:
         - "*"
+      add:
+        - disabled: false
+          name: index
+          value: "index ? index : C.vars.crowdstrike_default_splunk_index"
+        - disabled: false
+          name: sourcetype
+          value: "'crowdstrike:unified:alert:json'"
+        - disabled: false
+          name: source
+          value: "source ? source : 'cribl-crowdstrike-alerts-rest'"
     description: Cleanup fields
-  - id: chain
-    filter: "true"
-    disabled: false
-    conf:
-      processor: cribl_crowdstrike_alerts_ocsf
-    description: Format data as OCSF
+    groupId: gFfQIq

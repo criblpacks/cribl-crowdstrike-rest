@@ -7,3 +7,20 @@ crowdstrike_detections_filter_low_severity:
   type: boolean
   lib: custom
   value: "true"
+  description: Set to true to filter out low severity detections
+crowdstrike_vulnerabilities_collector_id:
+  type: any
+  lib: custom
+  value: "'in_crowdstrike_vulnerabilities'"
+crowdstrike_devices_collector_id:
+  type: any
+  lib: custom
+  value: "'in_crowdstrike_devices'"
+crowdstrike_alerts_collector_id:
+  type: any
+  lib: custom
+  value: "'in_crowdstrike_alerts'"
+crowdstrike_default_splunk_index:
+  type: any
+  lib: custom
+  value: "'crowdstrike'"

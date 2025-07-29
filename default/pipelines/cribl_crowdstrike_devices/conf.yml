@@ -4,6 +4,10 @@ groups:
   VQH9ac:
     name: Filter fields
     index: 3
+  WK4B9j:
+    name: Outputs
+    index: 4
+    description: Select the desired output
 asyncFuncTimeout: 1000
 functions:
   - id: comment
@@ -42,9 +46,28 @@ functions:
         - device_policies*
     groupId: VQH9ac
     description: Remove device_policies array
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Enable to output OCSF (Amazon Security Lake)
+    groupId: WK4B9j
+  - id: chain
+    filter: "true"
+    disabled: true
+    conf:
+      processor: cribl_crowdstrike_devices_ocsf
+    groupId: WK4B9j
+    description: Map to OCSF Device Inventory (5001) Class
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Enable to output to Splunk
+    groupId: WK4B9j
   - id: serialize
     filter: "true"
-    disabled: false
+    disabled: true
     conf:
       type: json
       dstField: _raw
@@ -54,9 +77,10 @@ functions:
         - "!host"
         - "!source"
         - "*"
+    groupId: WK4B9j
   - id: eval
     filter: "true"
-    disabled: false
+    disabled: true
     conf:
       remove:
         - "*"
@@ -65,13 +89,16 @@ functions:
         - _*
         - host
         - source
-  - id: comment
-    filter: "true"
-    disabled: null
-    conf:
-      comment: Map to OCSF
-  - id: chain
-    filter: "true"
-    disabled: false
-    conf:
-      processor: cribl_crowdstrike_devices_ocsf
+        - sourcetype
+        - index
+      add:
+        - disabled: false
+          name: index
+          value: "index ? index : C.vars.crowdstrike_default_splunk_index"
+        - disabled: false
+          name: sourcetype
+          value: "'crowdstrike:device:json'"
+        - disabled: false
+          name: source
+          value: "source ? source : 'cribl-crowdstrike-devices-rest'"
+    groupId: WK4B9j
