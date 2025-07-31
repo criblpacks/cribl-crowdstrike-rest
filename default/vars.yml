@@ -24,3 +24,4 @@ crowdstrike_default_splunk_index:
   type: any
   lib: custom
   value: "'crowdstrike'"
+  description: Default index for the Splunk output

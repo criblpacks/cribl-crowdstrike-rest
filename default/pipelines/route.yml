@@ -11,7 +11,7 @@ routes:
     enableOutputExpression: false
     outputExpression: null
     filter: __inputId.includes(C.vars.crowdstrike_devices_collector_id) ||
-      _raw.includes('agent_local_time')
+      _raw.includes('device_policies')
     clones: []
     output: default
   - id: 2cBUSz
@@ -23,7 +23,7 @@ routes:
     enableOutputExpression: false
     outputExpression: null
     filter: __inputId.includes(C.vars.crowdstrike_vulnerabilities_collector_id) ||
-      _raw.includes('vulnerability_id')
+      _raw.includes('exploitability_score')
     clones: []
     output: default
   - id: U9Z36S

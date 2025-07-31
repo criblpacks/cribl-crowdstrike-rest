@@ -1,1 +1,15 @@
-{}
+Zppq6H:
+  sampleName: cribl_crowdstrike_alerts
+  created: 1753904716657
+  size: 320577
+  numEvents: 19
+HOkDlF:
+  sampleName: cribl_crowdstrike_devices
+  created: 1753907052044
+  size: 284665
+  numEvents: 25
+bs00WF:
+  sampleName: cribl_crowdstrike_vulnerabilities
+  created: 1753918959719
+  size: 104865
+  numEvents: 10
