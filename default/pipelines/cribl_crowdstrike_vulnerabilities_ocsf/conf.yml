@@ -1,0 +1,251 @@
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Map Crowdstrike Vulnerability data to the Vulnerability Finding (2002)
+        Class
+  - id: eval
+    filter: "true"
+    disabled: true
+    conf:
+      add:
+        - name: rawParsed
+          value: JSON.parse(_raw)
+    description: Parse the JSON that is in _raw
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Edit crowdstrike_device_type_mapping.csv as needed to add custom
+        product_type_desc values
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - disabled: false
+          name: os_object
+          value: "{}"
+        - disabled: false
+          name: os_object.name
+          value: host_info.platform
+        - disabled: false
+          name: os_object.build
+          value: host_info.os_build
+        - disabled: false
+          name: os_object.version
+          value: host_info.os_version
+        - disabled: false
+          name: os_object.type_id
+          value: 'host_info.platform.includes("Windows") ? 100 :
+            rawParsed.host_info.platform.includes("Linux") ? 200 :
+            rawParsed.host_info.platform.includes("mac") ? 300 : 0'
+        - disabled: false
+          name: os_object.type
+          value: "host_info.platform.includes(\"Windows\") ? 'Windows' :
+            rawParsed.host_info.platform.includes(\"Linux\") ? 'Linux' :
+            rawParsed.host_info.platform.includes(\"mac\") ? 'macOS' :
+            'Unknown'"
+    groupId: tlhTmH
+    description: Set os field
+  - id: lookup
+    filter: "true"
+    disabled: false
+    conf:
+      dbLookup: false
+      matchMode: exact
+      reloadPeriodSec: -1
+      inFields:
+        - eventField: host_info.product_type_desc
+          lookupField: product_type_description
+      addToEvent: false
+      ignoreCase: false
+      file: crowdstrike_device_type_mapping.csv
+      outFields:
+        - lookupField: type_id
+          defaultValue: "0"
+        - lookupField: type
+          defaultValue: Unknown
+    description: Lookup type_id and type
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: device
+          value: "{}"
+        - disabled: false
+          name: device.os
+          value: os_object
+        - name: device.uid
+          value: host_info.device_id
+        - name: device.hostname
+          value: host_info.hostname
+        - name: device.ip
+          value: host_info.local_ip
+        - disabled: false
+          name: device.mac
+          value: host_info.mac_address
+        - name: device.vendor_name
+          value: host_info.system_manufacturer
+        - name: device.type_id
+          value: type_id
+        - name: device.type
+          value: type
+        - disabled: false
+          name: device.domain
+          value: host_info.machine_domain
+    description: Set device Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: metadata
+          value: "{}"
+        - name: metadata.product
+          value: "{}"
+        - name: metadata.product.name
+          value: "'Crowdstrike Falcon Spotlight'"
+        - name: metadata.product.vendor_name
+          value: "'CrowdStrike'"
+        - name: metadata.product.uid
+          value: "'crowdstrike_falcon_spotlight'"
+        - name: metadata.product.version
+          value: "'v1'"
+        - name: metadata.created_time
+          value: created_timestamp
+        - disabled: false
+          name: metadata.updated_time
+          value: updated_timestamp
+        - name: metadata.version
+          value: "'1.4.0'"
+    description: Set metadata Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: unmapped
+          value: "{}"
+        - name: unmapped.aid
+          value: aid
+        - name: unmapped.cid
+          value: cid
+        - name: unmapped.remediation
+          value: remediation
+        - name: unmapped.suppression_info
+          value: suppression_info
+    description: Set unmapped Vulnerability field
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      add:
+        - name: activity_id
+          value: "2"
+        - name: category_uid
+          value: "2"
+        - disabled: false
+          name: category_name
+          value: "'Findings'"
+        - name: class_uid
+          value: "2002"
+        - disabled: false
+          name: class_name
+          value: "'Vulnerability Finding'"
+        - name: confidence_id
+          value: "confidence === 'confirmed' ? 3 : confidence === 'potential' ? 2 : 0"
+        - disabled: false
+          name: confidence
+          value: "confidence === 'confirmed' ? 'High' : confidence === 'potential' ?
+            'Medium' : 'Unknown'"
+        - disabled: false
+          name: confidence_score
+          value: cve.base_score
+        - name: finding_info
+          value: "{}"
+        - name: finding_info.uid
+          value: id
+        - name: finding_info.title
+          value: vulnerability_id
+        - name: message
+          value: cve.description
+        - disabled: false
+          name: severity
+          value: cve.severity
+        - name: severity_id
+          value: "cve.severity==='INFORMATIONAL' ? 1 : cve.severity === 'LOW' ? 2 :
+            cve.severity === 'MEDIUM' ? 3 : cve.severity === 'HIGH' ? 4 :
+            cve.severity === 'CRITICAL' ? 5 : 0"
+        - disabled: false
+          name: severity
+          value: "cve.severity==='INFORMATIONAL' ? 'Informational' : cve.severity ===
+            'LOW' ? 'Low' : cve.severity === 'MEDIUM' ? 'Medium' : cve.severity
+            === 'HIGH' ? 'High' : cve.severity === 'CRITICAL' ? 'Critical' : 0"
+        - name: status_code
+          value: status
+        - name: status_detail
+          value: status + ' on ' + updated_timestamp
+        - name: status_id
+          value: "status === 'open' ? 2 : status === 'reopen' ? 1 : status === 'closed' ?
+            4 : status === 'expired' ? 5 : 0"
+        - disabled: false
+          name: status
+          value: "status === 'open' ? 'In Progress' : status === 'reopen' ? 'New' : status
+            === 'closed' ? 'Resolved' : status === 'expired' ? 'Archived' :
+            'Unknown'"
+        - name: time
+          value: new Date(created_timestamp).getTime()/1000
+        - name: type_uid
+          value: class_uid * 100 + activity_id
+        - name: vulnerabilities
+          value: "[{cve:{uid: cve.id, title: cve.description, references:
+            cve.vendor_advisory, cvss:[{base_score: cve.base_score,
+            version:'3.1'}]}, cwe:{uid:(cve.cwes && cve.cwes.length > 0 ?
+            cve.cwes[0] : '')}}]"
+        - disabled: false
+          name: raw_data
+          value: _raw
+    description: Set remaining OCSF Vulnerability fields
+    groupId: tlhTmH
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      keep:
+        - unmapped.*
+        - message
+        - finding_info.*
+        - time
+        - activity_id
+        - class_uid
+        - type_uid
+        - metadata.*
+        - vulnerabilities.*
+        - confidence*
+        - category*
+        - device*
+        - status*
+        - severity*
+        - raw_data
+      remove:
+        - "*"
+        - _*
+    description: Drop non-OCSF fields
+streamtags:
+  - cpe
+groups:
+  tlhTmH:
+    name: Set OCSF Vulnerability fields
+    index: 3
+    disabled: false
+description: |-
+  Map Crowdstrike Vulnerabilities to OCSF Class 2002 - Vulnerability Finding. 
+
+  https://schema.ocsf.io/1.4.0/classes/vulnerability_finding

@@ -1,0 +1,51 @@
+id: default
+groups: {}
+comments: []
+routes:
+  - id: RZ2q8A
+    name: cribl_crowdstrike_devices_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_devices
+    description: Process events from the Devices REST endpoint
+    enableOutputExpression: false
+    outputExpression: null
+    filter: __inputId.includes(C.vars.crowdstrike_devices_collector_id) ||
+      _raw.includes('device_policies')
+    clones: []
+    output: default
+  - id: 2cBUSz
+    name: cribl_crowdstrike_vulnerabilities_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_vulnerabilities
+    description: Process events from the Vulnerabilities REST endpoint
+    enableOutputExpression: false
+    outputExpression: null
+    filter: __inputId.includes(C.vars.crowdstrike_vulnerabilities_collector_id) ||
+      _raw.includes('exploitability_score')
+    clones: []
+    output: default
+  - id: U9Z36S
+    name: cribl_crowdstrike_alerts_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_alerts
+    description: Process events from the Alerts REST endpoint
+    enableOutputExpression: false
+    outputExpression: null
+    filter: __inputId.includes(C.vars.crowdstrike_alerts_collector_id) ||
+      _raw.includes('automated_triage')
+    clones: []
+    output: default
+  - id: default
+    name: default
+    final: true
+    disabled: false
+    pipeline: devnull
+    description: ""
+    enableOutputExpression: false
+    outputExpression: null
+    filter: "true"
+    clones: []
+    output: default

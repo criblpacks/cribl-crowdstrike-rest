@@ -1,0 +1,12 @@
+type_id,product_type_description,chassis_type_desc,type
+0,Unknown,Invalid Chassis Type,Unknown
+1,Server,Server,Server
+1,Domain Controller,,Server
+2,Desktop,Desktop,Desktop
+2,Workstation,,Desktop
+3,Laptop,Laptop,Laptop
+4,Tablet,Tablet,Tablet
+5,Mobile,,Mobile
+6,Virtual,,Vitual
+7,IOT,,IOT
+99,Other,Other,Other
