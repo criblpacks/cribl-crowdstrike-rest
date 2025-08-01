@@ -7,7 +7,7 @@ routes:
     final: true
     disabled: false
     pipeline: cribl_crowdstrike_devices
-    description: ""
+    description: Process events from the Devices REST endpoint
     enableOutputExpression: false
     outputExpression: null
     filter: __inputId.includes(C.vars.crowdstrike_devices_collector_id) ||
@@ -19,7 +19,7 @@ routes:
     final: true
     disabled: false
     pipeline: cribl_crowdstrike_vulnerabilities
-    description: ""
+    description: Process events from the Vulnerabilities REST endpoint
     enableOutputExpression: false
     outputExpression: null
     filter: __inputId.includes(C.vars.crowdstrike_vulnerabilities_collector_id) ||
@@ -31,7 +31,7 @@ routes:
     final: true
     disabled: false
     pipeline: cribl_crowdstrike_alerts
-    description: ""
+    description: Process events from the Alerts REST endpoint
     enableOutputExpression: false
     outputExpression: null
     filter: __inputId.includes(C.vars.crowdstrike_alerts_collector_id) ||
