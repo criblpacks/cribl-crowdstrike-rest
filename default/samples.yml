@@ -1,0 +1,15 @@
+bLVYls:
+  sampleName: cribl_crowdstrike_alerts
+  created: 1755129926649
+  size: 9973
+  numEvents: 1
+VAFtEZ:
+  sampleName: cribl_crowdstrike_vulnerabilities
+  created: 1755133059802
+  size: 11553
+  numEvents: 1
+dZbmta:
+  sampleName: cribl_crowdstrike_devices
+  created: 1755133767871
+  size: 6817
+  numEvents: 1

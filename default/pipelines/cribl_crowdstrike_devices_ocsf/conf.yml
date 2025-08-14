@@ -1,0 +1,206 @@
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Map Crowdstrike Device data to the Device Inventory (5001) Class
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Try to map the product_type_desc field to type and type_id.
+    groupId: CGZA2N
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Edit crowdstrike_device_type_mapping.csv as needed to add custom
+        product_type_desc values
+    groupId: CGZA2N
+  - id: lookup
+    filter: "true"
+    disabled: null
+    conf:
+      dbLookup: false
+      matchMode: exact
+      reloadPeriodSec: -1
+      inFields:
+        - eventField: chassis_type_desc
+          lookupField: chassis_type_desc
+      addToEvent: false
+      ignoreCase: false
+      file: crowdstrike_device_type_mapping.csv
+      outFields:
+        - lookupField: type_id
+          defaultValue: "0"
+    groupId: CGZA2N
+    description: Lookup type_id
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - disabled: false
+          name: os_object
+          value: "{}"
+        - disabled: false
+          name: os_object.name
+          value: os_product_name
+        - disabled: false
+          name: os_object.build
+          value: os_build
+        - disabled: false
+          name: os_object.version
+          value: os_version
+        - disabled: false
+          name: os_object.build
+          value: os_build
+        - disabled: false
+          name: os_object.type_id
+          value: 'os_product_name.includes("Windows") ? 100 :
+            os_product_name.includes("Linux") ? 200 :
+            os_product_name.includes("mac") ? 300 : 0'
+        - disabled: false
+          name: os_object.type
+          value: "os_product_name.includes(\"Windows\") ? 'Windows' :
+            os_product_name.includes(\"Linux\") ? 'Linux' :
+            os_product_name.includes(\"mac\") ? 'macOS' : 'Unknown'"
+    groupId: CGZA2N
+    description: Set Device OS field
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: device
+          value: "{}"
+        - disabled: false
+          name: device.os
+          value: os_object
+        - name: device.uid
+          value: device_id
+        - name: device.hostname
+          value: hostname
+        - name: device.ip
+          value: local_ip
+        - disabled: false
+          name: device.mac
+          value: mac_address
+        - name: device.vendor_name
+          value: system_manufacturer
+        - name: device.type_id
+          value: type_id
+        - name: device.type
+          value: 'chassis_type_desc==="Invalid Chassis Type" ? 0 : chassis_type_desc'
+        - disabled: false
+          name: device.first_seen_time
+          value: new Date(first_seen).getTime()
+        - disabled: false
+          name: device.last_seen_time
+          value: new Date(last_seen).getTime()
+        - disabled: false
+          name: device.domain
+          value: machine_domain
+        - disabled: false
+          name: device.owner
+          value: "[{name:last_login_user}]"
+    description: Set device field
+    groupId: CGZA2N
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: metadata
+          value: "{}"
+        - name: metadata.product
+          value: "{}"
+        - name: metadata.product.name
+          value: "'Falcon Device Inventory'"
+        - name: metadata.product.vendor_name
+          value: "'CrowdStrike'"
+        - name: metadata.product.version
+          value: agent_version
+        - name: metadata.version
+          value: "'1.4.0'"
+        - name: metadata.tenant_uid
+          value: cid
+    description: Set metadata Device
+    groupId: CGZA2N
+  - id: eval
+    filter: "true"
+    disabled: null
+    conf:
+      add:
+        - name: activity_id
+          value: "2"
+        - disabled: false
+          name: activity_name
+          value: "'Collect'"
+        - name: category_uid
+          value: "5"
+        - name: class_uid
+          value: "5001"
+        - disabled: false
+          name: class_name
+          value: "'Device Inventory Info'"
+        - name: message
+          value: "'Crowdstrike Device inventory record'"
+        - disabled: false
+          name: raw_data
+          value: _raw
+        - name: severity_id
+          value: "1"
+        - name: status_id
+          value: "1"
+        - name: status
+          value: "'Success'"
+        - name: status_code
+          value: rtr_state
+        - name: status_detail
+          value: filesystem_containment_status
+        - name: time
+          value: new Date(agent_local_time).getTime()
+        - name: timezone_offset
+          value: "0"
+        - name: type_uid
+          value: "500102"
+        - name: unmapped
+          value: "{}"
+          disabled: true
+      keep: []
+      remove: []
+    description: Set remaining OSCF Device Inventory  fields
+    groupId: CGZA2N
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      keep:
+        - unmapped.*
+        - message
+        - category_uid
+        - status_detail
+        - status_code
+        - time
+        - status_id
+        - status
+        - observables.*
+        - timezone_offset
+        - device.*
+        - type_uid
+        - metadata.*
+        - activity_*
+        - raw_data
+        - category_*
+        - class_*
+      remove:
+        - "*"
+        - __*
+    description: Drop non-OCSF fields
+streamtags:
+  - cpe
+groups:
+  CGZA2N:
+    name: Set OCSF Device Inventory  fields
+    index: 1

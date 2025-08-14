@@ -1,0 +1,96 @@
+output: default
+streamtags: []
+groups:
+  lysIay:
+    name: Outputs
+    index: 4
+    description: Select the desired output
+    disabled: false
+asyncFuncTimeout: 1000
+functions:
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: Parse and remove unneeded fields from Crowdstrike Vulnerability logs
+  - id: comment
+    filter: "true"
+    disabled: null
+    conf:
+      comment: "Author: Cribl Packs Team"
+  - id: serde
+    filter: "true"
+    disabled: null
+    conf:
+      mode: extract
+      type: json
+      srcField: _raw
+      remove:
+        - _raw
+    description: Parse the fields from the JSON event in _raw
+  - id: eval
+    filter: "true"
+    disabled: false
+    conf:
+      remove:
+        - evaluation_logic*
+    description: Remove unneeded/redundant fields
+  - id: comment
+    filter: "true"
+    disabled: false
+    conf:
+      comment: Enable to output OCSF (Amazon Security Lake)
+    groupId: lysIay
+  - id: chain
+    filter: "true"
+    disabled: true
+    conf:
+      processor: cribl_crowdstrike_vulnerabilities_ocsf
+    description: Map to the OCSF Vulnerability Finding (2002) Class
+    groupId: lysIay
+  - id: comment
+    filter: "true"
+    disabled: false
+    conf:
+      comment: Enable to output to Splunk
+    groupId: lysIay
+  - id: serialize
+    filter: "true"
+    disabled: true
+    conf:
+      type: json
+      dstField: _raw
+      fields:
+        - "!cribl_*"
+        - "!_*"
+        - "!host"
+        - "!source"
+        - "!index"
+        - "!sourcetype"
+        - "*"
+    groupId: lysIay
+    description: "Serialize as JSON back into _raw "
+  - id: eval
+    filter: "true"
+    disabled: true
+    conf:
+      remove:
+        - "*"
+      keep:
+        - cribl_*
+        - _*
+        - host
+        - source
+        - sourcetype
+        - index
+      add:
+        - disabled: false
+          name: index
+          value: "index ? index : C.vars.crowdstrike_default_splunk_index"
+        - disabled: false
+          name: sourcetype
+          value: "'crowdstrike:spotlight:vulnerability:json'"
+        - disabled: false
+          name: source
+          value: "source ? source : 'cribl-crowdstrike-vulnerabilities-rest'"
+    groupId: lysIay

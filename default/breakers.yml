@@ -1,0 +1,63 @@
+Crowdstrike API Ruleset:
+  lib: custom
+  minRawLength: 256
+  rules:
+    - condition: _raw.includes("device_policies")
+      type: json_array
+      timestampAnchorRegex: /modified_timestamp/
+      timestamp:
+        type: auto
+        length: 150
+      timestampTimezone: UTC
+      timestampEarliest: -420weeks
+      timestampLatest: +1week
+      maxEventBytes: 134217728
+      disabled: false
+      parserEnabled: false
+      shouldUseDataRaw: false
+      jsonExtractAll: false
+      delimiterRegex: /\t/
+      fieldsLineRegex: /^#[Ff]ields[:]?\s+(.*)/
+      headerLineRegex: /^#/
+      nullFieldVal: "-"
+      cleanFields: true
+      eventBreakerRegex: /[\n\r]+(?!\s)/
+      name: Crowdstrike_Devices
+      jsonTimeField: modified_timestamp
+    - condition: _raw.includes("legacy-detects") || _raw.includes('automated_triage')
+      type: json_array
+      timestampAnchorRegex: /created_timestamp/
+      timestamp:
+        type: auto
+        length: 50
+      timestampTimezone: UTC
+      timestampEarliest: -420weeks
+      timestampLatest: +1week
+      maxEventBytes: 134217728
+      disabled: false
+      parserEnabled: false
+      shouldUseDataRaw: false
+      jsonExtractAll: false
+      eventBreakerRegex: /[\n\r]+(?!\s)/
+      name: Crowdstrike_Alerts
+      jsonArrayField: resources
+    - condition: true || _raw.includes('vulnerability_id') ||
+        source.includes('vulnerabilities')
+      type: json_array
+      timestampAnchorRegex: /updated_timestamp/
+      timestamp:
+        type: auto
+        length: 150
+      timestampTimezone: UTC
+      timestampEarliest: -420weeks
+      timestampLatest: +1week
+      maxEventBytes: 134217728
+      disabled: false
+      parserEnabled: false
+      shouldUseDataRaw: false
+      jsonExtractAll: false
+      eventBreakerRegex: /[\n\r]+(?!\s)/
+      jsonArrayField: resources
+      name: Crowdstrike_Vulnerabilities
+      jsonTimeField: updated_timestamp
+  description: Event breaker rules for Crowdstrike API data
