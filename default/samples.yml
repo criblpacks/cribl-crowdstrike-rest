@@ -1,5 +1,5 @@
 bLVYls:
-  sampleName: cribl_crowdstrike_alerts
+  sampleName: cribl_crowdstrike_alerts_v1
   created: 1755129926649
   size: 9973
   numEvents: 1
@@ -12,4 +12,14 @@ dZbmta:
   sampleName: cribl_crowdstrike_devices
   created: 1755133767871
   size: 6817
+  numEvents: 1
+HC0POT:
+  sampleName: cribl_crowdstrike_alerts_v2
+  created: 1758831897140
+  size: 4255
+  numEvents: 1
+aNabI0:
+  sampleName: cribl_crowdstrike_alerts_v2_high
+  created: 1758835699102
+  size: 16564
   numEvents: 1

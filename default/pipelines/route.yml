@@ -1,6 +1,9 @@
 id: default
 groups: {}
-comments: []
+comments:
+  - id: 5JIyGJ
+    comment: The V1 Alerts API is EOL as of 9/25/2025
+    index: 3
 routes:
   - id: RZ2q8A
     name: cribl_crowdstrike_devices_route
@@ -10,8 +13,7 @@ routes:
     description: Process events from the Devices REST endpoint
     enableOutputExpression: false
     outputExpression: null
-    filter: __inputId.includes(C.vars.crowdstrike_devices_collector_id) ||
-      _raw.includes('device_policies')
+    filter: source.includes('/devices/entities/devices/v2')
     clones: []
     output: default
   - id: 2cBUSz
@@ -22,20 +24,29 @@ routes:
     description: Process events from the Vulnerabilities REST endpoint
     enableOutputExpression: false
     outputExpression: null
-    filter: __inputId.includes(C.vars.crowdstrike_vulnerabilities_collector_id) ||
-      _raw.includes('exploitability_score')
+    filter: source.includes('/spotlight/combined/vulnerabilities/v1')
+    clones: []
+    output: default
+  - id: OoRrF9
+    name: cribl_crowdstrike_alerts_v2_route
+    final: true
+    disabled: false
+    pipeline: cribl_crowdstrike_alerts_v2
+    description: Process events from the Alerts V2 REST endpoint
+    enableOutputExpression: false
+    outputExpression: null
+    filter: source.includes('/alerts/entities/alerts/v2')
     clones: []
     output: default
   - id: U9Z36S
-    name: cribl_crowdstrike_alerts_route
+    name: cribl_crowdstrike_alerts_v1_route
     final: true
-    disabled: false
+    disabled: true
     pipeline: cribl_crowdstrike_alerts
     description: Process events from the Alerts REST endpoint
     enableOutputExpression: false
     outputExpression: null
-    filter: __inputId.includes(C.vars.crowdstrike_alerts_collector_id) ||
-      _raw.includes('automated_triage')
+    filter: source.includes('/alerts/entities/alerts/v1')
     clones: []
     output: default
   - id: default
