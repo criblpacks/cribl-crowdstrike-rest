@@ -20,12 +20,32 @@ Note: The official Crowdstrike API documentation access requires a support contr
 
 ## About this Pack
 
-A key benefit of the Pack (in the *very* near future!) is to provide pre-defined REST Collector Sources for all three data types. See the Deployment section for details on how to configure them. 
+This Pack is designed to collect, process, and output Crowdstrike data via the Crowdstrike REST API. It currently supports the following API's:
 
-While this Pack does not have pre-configured Destinations, it does provide either OCSF or Splunk as an output format. 
+* Host/Device Details ([falconpy link](https://www.falconpy.io/Service-Collections/Hosts.html#getdevicedetailsv2))
+
+Note: The official Crowdstrike API documentation access requires a support contract.
 
 ## Deployment
-Currently, this Pack only has a few configurable items. 
+After installing the Pack, you must perform the following:
+
+1. Add the Event Breaker Ruleset included in Appendix A below to your Stream instance under Processing > Knowledge > Event Breaker Rules.
+2. Obtain a ```Client ID``` and ```Client Secret``` from your Crowdstrike Administrator. These credentials must have ```read``` access to the Hosts, Vulnerabilities, and Alerts API endpoints. 
+3. Add the three Collector Sources in Appendix B to your Stream instance via Data > Sources > Collectors > REST. Configure each with the credentials from above and perform a Run > Preview to verify.
+4. Schedule each Collector and enable State Tracking (with default configuration) for the Alerts and Vulnerabilities Collectors *only*. Suggested schedules for each are:
+
+   *  Alerts: Every 5 minutes
+   *  Devices: Once/day - this endpoint is configured to retrieve all Devices so keep that in mind.
+   *  Vulnerabilities: Every hour
+5. Connect the Crowdstrike Rest Collectors to the Pack. On the global Routes page, add a new route, specify a filter expression (if using the default Collector names, than something like ```__inputId.includes('in_crowdstrike')``` will work) and choose the ```cribl-crowdstrike-rest``` Pack in the Pipeline dropdown.
+
+
+The following are the in-Pack configurable items - review/update them as needed. 
+
+Each data type can be configured to output data in either OCSF or normalized JSON (Splunk) format. Enable *only one* format for each of the following pipelines:
+* ```cribl_crowdstrike_alerts```
+* ```cribl_crowdstrike_devices```
+* ```cribl_crowdstrike_vulnerabilities```
 
 #### Lookups
 The Pack includes a lookup called `crowdstrike_device_type_mapping.csv` that is used to generate the [OSCF Device](https://schema.ocsf.io/1.4.0/objects/device) `type` and `type_id` fields:
@@ -42,7 +62,6 @@ The Pack has the following variables:
 
 ### Version 0.1.5 - 2025-09-25
 
-External Beta
 * Adds support for the Alerts V2 API Endpoint as the Alerts V1 Endpoint reached EOL on 9/30/2025.
   
 ### Version 0.1.0 - 2025-08-01
