@@ -2,7 +2,7 @@ crowdstrike_alerts_filter_low_severity:
   type: boolean
   lib: custom
   description: Set to true to filter out low severity alerts
-  value: "true"
+  value: "false"
 crowdstrike_detections_filter_low_severity:
   type: boolean
   lib: custom
